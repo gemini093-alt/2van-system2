@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>평화와 사랑의 2반 경고 관리 System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'custom-blue': '#4A90E2',
+                        'custom-yellow': '#F5A623',
+                        'custom-red': '#D0021B',
+                        'custom-green': '#7ED321',
+                        'custom-white': '#FFFFFF',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8FAFC;
+        }
+
+        .page-transition {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
+
+        .page-hidden {
+            opacity: 0;
+            transform: translateY(15px);
+            pointer-events: none;
+            position: absolute;
+            visibility: hidden;
+        }
+
+        .page-visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            position: relative;
+            visibility: visible;
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 커스텀 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- 네비게이션 바 -->
+    <nav class="bg-custom-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center cursor-pointer" onclick="showPage('home')">
+                    <span class="text-custom-blue text-2xl mr-2">🕊️</span>
+                    <h1 class="text-xl font-black text-gray-800 tracking-tight">
+                        평화와 사랑의 <span class="text-custom-blue">2반</span>
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-1 md:space-x-4">
+                    <button onclick="showPage('home')" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-custom-blue hover:bg-blue-50 transition">홈</button>
+                    <button onclick="showPage('notice')" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-custom-yellow hover:bg-yellow-50 transition">공지사항</button>
+                    <button onclick="showPage('status')" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-custom-green hover:bg-green-50 transition">경고 현황</button>
+                    <button onclick="openLoginModal()" class="px-3 py-2 rounded-md text-sm font-bold text-custom-red hover:bg-red-50 transition border border-transparent hover:border-custom-red">관리자</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full relative">
+        
+        <!-- 1. 홈 화면 -->
+        <section id="page-home" class="page-transition page-visible flex flex-col items-center justify-center min-h-[70vh] text-center">
+            <div class="inline-block p-4 rounded-full bg-blue-100 mb-6">
+                <span class="text-6xl">🏫</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-black text-gray-800 mb-4 tracking-tight">
+                평화와 사랑의 2반<br/>
+                <span class="text-custom-blue">경고 관리 System</span>
+            </h2>
+            <p class="text-lg text-gray-500 mb-10 max-w-2xl">
+                올바른 학교 생활과 평화로운 학급 분위기 조성을 위한 시스템입니다.<br>
+                규칙을 준수하고 서로를 배려하는 2반이 됩시다!
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+                <button onclick="showPage('notice')" class="bg-custom-white border-2 border-custom-yellow rounded-2xl p-8 flex flex-col items-center justify-center btn-hover group transition-all">
+                    <span class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📢</span>
+                    <span class="text-xl font-bold text-gray-800">공지사항 보러가기</span>
+                    <span class="text-sm text-gray-500 mt-2">우리 반의 규칙과 기준 확인하기</span>
+                </button>
+                <button onclick="showPage('status')" class="bg-custom-white border-2 border-custom-green rounded-2xl p-8 flex flex-col items-center justify-center btn-hover group transition-all">
+                    <span class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📊</span>
+                    <span class="text-xl font-bold text-gray-800">경고 현황 보러가기</span>
+                    <span class="text-sm text-gray-500 mt-2">현재 나의 점수와 상태 확인하기</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. 공지사항 화면 -->
+        <section id="page-notice" class="page-transition page-hidden">
+            <div class="flex items-center mb-8 border-b-2 border-custom-blue pb-4">
+                <span class="text-3xl mr-3">📢</span>
+                <h2 class="text-3xl font-bold text-custom-blue">학급 공지사항</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 공지 카드 1: 중요 -->
+                <div class="bg-custom-white rounded-2xl p-6 card-shadow border-t-4 border-custom-red h-full">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-red-100 text-custom-red text-xs font-bold px-2 py-1 rounded mr-2">중요</span>
+                        <h3 class="text-xl font-bold text-gray-800">경고 누적 조치</h3>
+                    </div>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-700 font-medium">
+                        <li><strong>경고 2회 :</strong> 급식 줄 맨 뒤</li>
+                        <li><strong>경고 3회 :</strong> 깨끗한 우리 반 만들기 프로젝트</li>
+                        <li><strong>경고 4회 :</strong> 자리 바꾸기 순번 뒤로 가기</li>
+                        <li><strong>경고 5회 :</strong> 벌점 1점</li>
+                        <li class="text-custom-red mt-2 pt-2 border-t border-gray-100"><strong>1인 1역 불이행 적발 :</strong> 깨끗한 우리 반 만들기 프로젝트</li>
+                    </ul>
+                </div>
+
+                <!-- 공지 카드 2: 규칙1 -->
+                <div class="bg-custom-white rounded-2xl p-6 card-shadow border-t-4 border-custom-yellow h-full">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded mr-2">규칙1</span>
+                        <h3 class="text-xl font-bold text-gray-800">경고 부여 기준</h3>
+                    </div>
+                    <ol class="list-decimal pl-5 space-y-1 text-gray-600 text-sm">
+                        <li>조용히 할 때는 조용히 하기(구호 이후에 잡담 금지)</li>
+                        <li>수업 시간에 관련 없는 말 금지</li>
+                        <li>수업 시간에 불필요한 전자기기 사용X</li>
+                        <li>화장실과 물 마시기는 쉬는 시간에</li>
+                        <li>매사에 바른 태도로 임하기</li>
+                        <li>엘리베이터 타지 않기(다친 경우 제외)</li>
+                        <li>서로에게 착한 말 하도록 노력하기</li>
+                        <li>조례시간 전자기기는 학습 앱만 사용</li>
+                    </ol>
+                </div>
+                
+                <!-- 공지 카드 3: 규칙2 -->
+                <div class="bg-custom-white rounded-2xl p-6 card-shadow border-t-4 border-custom-green h-full">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-green-100 text-custom-green text-xs font-bold px-2 py-1 rounded mr-2">규칙2</span>
+                        <h3 class="text-xl font-bold text-gray-800">경고 차감(상점) 기준</h3>
+                    </div>
+                    <ol class="list-decimal pl-5 space-y-2 text-gray-700">
+                        <li>선생님께 칭찬을 받은 경우</li>
+                        <li>친구에게 준비물 및 물건 빌려주기</li>
+                        <li>다친 친구에게 적극적으로 도움주기</li>
+                    </ol>
+                </div>
+
+                <!-- 공지 카드 4: 안내 -->
+                <div class="bg-custom-white rounded-2xl p-6 card-shadow border-t-4 border-custom-blue h-full">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-blue-100 text-custom-blue text-xs font-bold px-2 py-1 rounded mr-2">안내</span>
+                        <h3 class="text-xl font-bold text-gray-800">기록 원칙</h3>
+                    </div>
+                    <p class="text-gray-700 text-lg flex items-center bg-blue-50 p-4 rounded-lg">
+                        <span class="text-2xl mr-3">👁️‍🗨️</span>
+                        <strong>1. 관리자가 직접 본 것만 반영할 것.</strong>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 경고 현황 화면 -->
+        <section id="page-status" class="page-transition page-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b-2 border-custom-green pb-4">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <span class="text-3xl mr-3">📊</span>
+                    <h2 class="text-3xl font-bold text-custom-green">학생 경고 현황</h2>
+                </div>
+                
+                <!-- 검색 및 필터 -->
+                <div class="w-full md:w-auto relative">
+                    <input type="text" id="search-input" placeholder="이름으로 검색..." class="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-custom-green focus:ring-1 focus:ring-custom-green shadow-sm" onkeyup="renderStudents()">
+                    <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                </div>
+            </div>
+
+            <!-- 상태 요약 뱃지 -->
+            <div class="flex flex-wrap gap-3 mb-6 bg-white p-4 rounded-xl card-shadow">
+                <div class="flex items-center mr-4"><span class="font-bold text-gray-700 mr-2">현재 분포:</span></div>
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-custom-blue mr-1"></span><span class="text-sm">모범 (음수): <b id="cnt-excellent">0</b>명</span></div>
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-custom-green mr-1"></span><span class="text-sm">안전 (0점): <b id="cnt-safe">0</b>명</span></div>
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-custom-yellow mr-1"></span><span class="text-sm">주의 (1점): <b id="cnt-warn">0</b>명</span></div>
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-orange-500 mr-1"></span><span class="text-sm">위험 (2~4점): <b id="cnt-danger">0</b>명</span></div>
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-custom-red mr-1"></span><span class="text-sm">면담요망 (5점+): <b id="cnt-critical">0</b>명</span></div>
+            </div>
+
+            <!-- 학생 그리드 -->
+            <div id="student-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- JS로 동적 생성됨 -->
+            </div>
+        </section>
+
+        <!-- 4. 관리자 화면 (로그인 후 접근 가능) -->
+        <section id="page-admin" class="page-transition page-hidden">
+            <div class="flex justify-between items-center mb-8 border-b-2 border-custom-red pb-4">
+                <div class="flex items-center">
+                    <span class="text-3xl mr-3">⚙️</span>
+                    <h2 class="text-3xl font-bold text-custom-red">관리자 제어 패널</h2>
+                </div>
+                <button onclick="logoutAdmin()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-bold py-2 px-4 rounded transition">로그아웃</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 폼 영역 -->
+                <div class="lg:col-span-1 bg-custom-white rounded-2xl p-6 card-shadow border-t-4 border-custom-blue">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                        <span class="mr-2">📝</span> 기록 추가
+                    </h3>
+                    
+                    <form id="record-form" onsubmit="handleRecordSubmit(event)">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="student-select">학생 선택</label>
+                            <select id="student-select" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-custom-blue focus:ring-1 focus:ring-custom-blue" required>
+                                <option value="" disabled selected>학생을 선택하세요</option>
+                                <!-- JS로 채워짐 -->
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="record-target">기록 항목</label>
+                            <select id="record-target" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-custom-blue focus:ring-1 focus:ring-custom-blue" required>
+                                <option value="score">경고 점수</option>
+                                <option value="lunch">급식 줄 맨 뒤</option>
+                                <option value="clean">깨끗한 우리 반 만들기</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">증감 유형</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="action-type" value="add" class="mr-2 text-custom-red focus:ring-custom-red" checked>
+                                    <span class="text-custom-red font-semibold">부여 (+)</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="action-type" value="sub" class="mr-2 text-custom-green focus:ring-custom-green">
+                                    <span class="text-custom-green font-semibold">차감 (-)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="score-value">점수/횟수</label>
+                            <input type="number" id="score-value" min="1" max="10" value="1" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-custom-blue focus:ring-1 focus:ring-custom-blue" required>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="record-reason">사유</label>
+                            <input type="text" id="record-reason" placeholder="어긴 규칙 또는 차감 사유 입력" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-custom-blue focus:ring-1 focus:ring-custom-blue" required>
+                        </div>
+
+                        <button type="submit" class="w-full bg-custom-blue hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg btn-hover shadow-md transition-colors">
+                            기록 저장하기
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 로그 영역 -->
+                <div class="lg:col-span-2 bg-custom-white rounded-2xl p-6 card-shadow border-t-4 border-gray-400 flex flex-col h-[600px]">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                            <span class="mr-2">🕒</span> 최근 기록 내역 (로그)
+                        </h3>
+                        <button onclick="clearLogs()" class="text-sm text-gray-500 hover:text-custom-red underline">내역 비우기</button>
+                    </div>
+                    
+                    <div class="flex-grow overflow-y-auto border rounded-lg bg-gray-50 p-2">
+                        <table class="min-w-full hidden" id="log-table">
+                            <thead class="bg-gray-100 border-b">
+                                <tr>
+                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">시간</th>
+                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
+                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">유형</th>
+                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">항목/변화</th>
+                                    <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사유</th>
+                                </tr>
+                            </thead>
+                            <tbody id="log-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- JS로 채워짐 -->
+                            </tbody>
+                        </table>
+                        <div id="no-log-msg" class="flex flex-col items-center justify-center h-full text-gray-400">
+                            <span class="text-4xl mb-2">📭</span>
+                            <p>아직 기록된 내역이 없습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-white border-t mt-auto py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm text-gray-500">
+                &copy; 2026 평화와 사랑의 2반 경고 관리 System. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- 관리자 로그인 모달 -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform" id="login-modal-content">
+            <div class="text-center mb-6">
+                <div class="inline-block p-3 rounded-full bg-red-100 text-custom-red mb-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800">관리자 인증</h3>
+                <p class="text-sm text-gray-500 mt-1">관리자 아이디와 비밀번호를 입력하세요.</p>
+            </div>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">아이디</label>
+                    <input type="text" id="login-id" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-custom-red" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label>
+                    <input type="password" id="login-pw" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-custom-red" required>
+                </div>
+                <div id="login-error" class="hidden text-custom-red text-sm mb-4 text-center font-bold">아이디 또는 비밀번호가 일치하지 않습니다.</div>
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeLoginModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">취소</button>
+                    <button type="submit" class="flex-1 bg-custom-red hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow transition">로그인</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 커스텀 알림 모달 (Alert 대체) -->
+    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[70] hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform" id="custom-modal-content">
+            <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-2">알림</h3>
+            <p id="modal-message" class="text-gray-600 mb-6">메시지 내용</p>
+            <button onclick="closeModal()" class="w-full bg-custom-blue hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">확인</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 데이터 모델 ---
+        // 15명의 학생 데이터 (학번 10101 ~ 10115)
+        let students = [
+            { id: 10101, name: "김다솜", score: 0, lunch: 0, clean: 0 },
+            { id: 10102, name: "김윤채", score: 0, lunch: 0, clean: 0 },
+            { id: 10103, name: "김지후", score: 0, lunch: 0, clean: 0 },
+            { id: 10104, name: "김하늬", score: 0, lunch: 0, clean: 0 },
+            { id: 10105, name: "동여음", score: 0, lunch: 0, clean: 0 },
+            { id: 10106, name: "박재성", score: 0, lunch: 0, clean: 0 },
+            { id: 10107, name: "신수아", score: 0, lunch: 0, clean: 0 },
+            { id: 10108, name: "안지원", score: 0, lunch: 0, clean: 0 },
+            { id: 10109, name: "유예란", score: 0, lunch: 0, clean: 0 },
+            { id: 10110, name: "이라임", score: 0, lunch: 0, clean: 0 },
+            { id: 10111, name: "이민하", score: 0, lunch: 0, clean: 0 },
+            { id: 10112, name: "전다현", score: 0, lunch: 0, clean: 0 },
+            { id: 10113, name: "조수아", score: 0, lunch: 0, clean: 0 },
+            { id: 10114, name: "최지수", score: 0, lunch: 0, clean: 0 },
+            { id: 10115, name: "한태빈", score: 0, lunch: 0, clean: 0 }
+        ];
+
+        let actionLogs = [];
+        let isAdminLoggedIn = false;
+
+        // --- 초기화 ---
+        window.onload = function() {
+            renderStudents();
+            renderAdminSelect();
+            renderLogs();
+        };
+
+        // --- 네비게이션 및 화면 전환 로직 ---
+        function showPage(pageId) {
+            if(pageId === 'admin' && !isAdminLoggedIn) {
+                openLoginModal();
+                return;
+            }
+
+            const pages = ['page-home', 'page-notice', 'page-status', 'page-admin'];
+            pages.forEach(id => {
+                const el = document.getElementById(id);
+                if (id === `page-${pageId}`) {
+                    el.classList.remove('page-hidden');
+                    el.classList.add('page-visible');
+                } else {
+                    el.classList.remove('page-visible');
+                    el.classList.add('page-hidden');
+                }
+            });
+
+            if(pageId === 'status') renderStudents();
+            if(pageId === 'admin') renderAdminSelect();
+        }
+
+        // --- 관리자 로그인 로직 ---
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('login-modal-content').classList.remove('scale-95');
+                document.getElementById('login-modal-content').classList.add('scale-100');
+            }, 10);
+            document.getElementById('login-id').value = '';
+            document.getElementById('login-pw').value = '';
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-id').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal-content').classList.remove('scale-100');
+            document.getElementById('login-modal-content').classList.add('scale-95');
+            setTimeout(() => {
+                document.getElementById('login-modal').classList.add('hidden');
+            }, 200);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const id = document.getElementById('login-id').value;
+            const pw = document.getElementById('login-pw').value;
+
+            if (id === '2van' && pw === 'happyday2') {
+                isAdminLoggedIn = true;
+                closeLoginModal();
+                showPage('admin');
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            showModal("로그아웃", "관리자 모드에서 안전하게 로그아웃 되었습니다.", "info");
+            showPage('home');
+        }
+
+        // --- 모달 로직 ---
+        function showModal(title, message, type = 'info') {
+            const modal = document.getElementById('custom-modal');
+            const titleEl = document.getElementById('modal-title');
+            const contentEl = document.getElementById('custom-modal-content');
+            
+            titleEl.innerHTML = title;
+            document.getElementById('modal-message').innerHTML = message;
+
+            // 타입별 타이틀 색상 변경
+            titleEl.className = 'text-xl font-bold mb-2 ';
+            if(type === 'error') titleEl.className += 'text-custom-red';
+            else if(type === 'success') titleEl.className += 'text-custom-green';
+            else titleEl.className += 'text-custom-blue';
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                contentEl.classList.remove('scale-95');
+                contentEl.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const contentEl = document.getElementById('custom-modal-content');
+            
+            contentEl.classList.remove('scale-100');
+            contentEl.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // --- 점수에 따른 상태 반환 함수 ---
+        function getScoreStatus(score) {
+            if (score < 0) return { label: '모범', colorClass: 'bg-blue-100 text-custom-blue', borderClass: 'border-custom-blue', icon: '🌟' };
+            if (score === 0) return { label: '안전', colorClass: 'bg-green-100 text-custom-green', borderClass: 'border-custom-green', icon: '😊' };
+            if (score === 1) return { label: '주의', colorClass: 'bg-yellow-100 text-yellow-700', borderClass: 'border-custom-yellow', icon: '🤔' };
+            if (score >= 2 && score <= 4) return { label: '위험', colorClass: 'bg-orange-100 text-orange-600', borderClass: 'border-orange-500', icon: '😨' };
+            return { label: '면담요망', colorClass: 'bg-red-100 text-custom-red', borderClass: 'border-custom-red', icon: '🚨' };
+        }
+
+        // --- 학생 현황 렌더링 ---
+        function renderStudents() {
+            const grid = document.getElementById('student-grid');
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            grid.innerHTML = '';
+
+            let counts = { excellent: 0, safe: 0, warn: 0, danger: 0, critical: 0 };
+
+            const filteredStudents = students.filter(student => student.name.toLowerCase().includes(searchTerm));
+
+            filteredStudents.forEach(student => {
+                const status = getScoreStatus(student.score);
+                
+                // 통계 카운트
+                if (student.score < 0) counts.excellent++;
+                else if (student.score === 0) counts.safe++;
+                else if (student.score === 1) counts.warn++;
+                else if (student.score >= 2 && student.score <= 4) counts.danger++;
+                else counts.critical++;
+
+                const card = document.createElement('div');
+                card.className = `bg-custom-white rounded-2xl p-5 card-shadow border-t-8 ${status.borderClass} relative overflow-hidden flex flex-col justify-between h-auto transform transition hover:scale-105`;
+                
+                // 배경 워터마크 아이콘
+                const bgIcon = document.createElement('div');
+                bgIcon.className = "absolute -right-4 -bottom-6 text-7xl opacity-5 pointer-events-none";
+                bgIcon.innerText = status.icon;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4 relative z-10">
+                        <div>
+                            <span class="text-xs font-bold text-gray-400">학번. ${student.id}</span>
+                            <h3 class="text-xl font-bold text-gray-800">${student.name}</h3>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold shadow-sm ${status.colorClass}">
+                            ${status.label}
+                        </span>
+                    </div>
+                    
+                    <div class="flex justify-between items-end relative z-10 w-full mt-2">
+                        <div class="flex flex-col space-y-1">
+                            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                급식맨뒤: <span class="${student.lunch > 0 ? 'text-custom-red font-bold' : 'text-gray-600'}">${student.lunch}회</span>
+                            </span>
+                            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                우리반청소: <span class="${student.clean > 0 ? 'text-custom-red font-bold' : 'text-gray-600'}">${student.clean}회</span>
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-xs text-gray-500 font-medium mb-1">경고 점수</span>
+                            <div class="text-3xl font-black ${student.score >= 5 ? 'text-custom-red' : (student.score < 0 ? 'text-custom-blue' : 'text-gray-700')} leading-none">
+                                ${student.score} <span class="text-sm font-normal text-gray-500">점</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                card.appendChild(bgIcon);
+                card.appendChild(bgIcon);
+                grid.appendChild(card);
+            });
+
+            // 통계 업데이트
+            document.getElementById('cnt-excellent').innerText = counts.excellent;
+            document.getElementById('cnt-safe').innerText = counts.safe;
+            document.getElementById('cnt-warn').innerText = counts.warn;
+            document.getElementById('cnt-danger').innerText = counts.danger;
+            document.getElementById('cnt-critical').innerText = counts.critical;
+        }
+
+        // --- 관리자: 셀렉트 박스 렌더링 ---
+        function renderAdminSelect() {
+            const select = document.getElementById('student-select');
+            select.innerHTML = '<option value="" disabled selected>학생을 선택하세요</option>';
+            
+            const sortedStudents = [...students].sort((a, b) => a.id - b.id);
+            
+            sortedStudents.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = `학번 ${student.id} - ${student.name} (점수:${student.score} | 급식:${student.lunch} | 청소:${student.clean})`;
+                select.appendChild(option);
+            });
+        }
+
+        // --- 관리자: 로그 렌더링 ---
+        function renderLogs() {
+            const tbody = document.getElementById('log-table-body');
+            const noLogMsg = document.getElementById('no-log-msg');
+            const table = tbody.parentElement;
+            
+            tbody.innerHTML = '';
+
+            if (actionLogs.length === 0) {
+                table.classList.add('hidden');
+                noLogMsg.classList.remove('hidden');
+                return;
+            }
+
+            table.classList.remove('hidden');
+            noLogMsg.classList.add('hidden');
+
+            actionLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                
+                let typeHtml = '';
+                if (log.type === 'add') {
+                    typeHtml = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">부여(+)</span>';
+                } else {
+                    typeHtml = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">차감(-)</span>';
+                }
+                
+                const changeClass = log.type === 'add' ? 'text-custom-red font-bold' : 'text-custom-green font-bold';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-sm text-gray-500 whitespace-nowrap">${log.date}</td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">${log.name}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">${typeHtml}</td>
+                    <td class="py-3 px-4 text-sm ${changeClass} whitespace-nowrap">${log.target} ${log.change}</td>
+                    <td class="py-3 px-4 text-sm text-gray-500 max-w-xs truncate" title="${log.reason}">${log.reason}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 현재 날짜 시간 포맷팅 함수
+        function getFormattedDate() {
+            const now = new Date();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            return `${mm}-${dd} ${hh}:${min}`;
+        }
+
+        // --- 관리자: 기록 폼 제출 처리 ---
+        function handleRecordSubmit(event) {
+            event.preventDefault();
+
+            const studentId = document.getElementById('student-select').value;
+            if (!studentId) {
+                showModal("오류", "학생을 선택해주세요.", "error");
+                return;
+            }
+
+            const target = document.getElementById('record-target').value;
+            const action = document.querySelector('input[name="action-type"]:checked').value;
+            const scoreValue = parseInt(document.getElementById('score-value').value);
+            const reason = document.getElementById('record-reason').value;
+
+            const studentIndex = students.findIndex(s => s.id == studentId);
+            if (studentIndex === -1) return;
+
+            const student = students[studentIndex];
+            const studentName = student.name;
+            let changeStr = "";
+            let targetLabel = "";
+
+            if (target === 'score') {
+                targetLabel = "경고 점수";
+                if (action === 'add') {
+                    student.score += scoreValue;
+                    changeStr = `+${scoreValue}`;
+                } else {
+                    student.score -= scoreValue;
+                    changeStr = `-${scoreValue}`;
+                }
+            } else if (target === 'lunch') {
+                targetLabel = "급식 줄 맨 뒤";
+                if (action === 'add') {
+                    student.lunch += scoreValue;
+                    changeStr = `+${scoreValue}`;
+                } else {
+                    const oldLunch = student.lunch;
+                    student.lunch = Math.max(0, oldLunch - scoreValue);
+                    if (oldLunch - student.lunch === 0) {
+                        showModal("안내", "현재 횟수가 0회라 더 이상 차감할 수 없습니다.", "info");
+                        return;
+                    }
+                    changeStr = `-${oldLunch - student.lunch}`;
+                }
+            } else if (target === 'clean') {
+                targetLabel = "깨끗한 우리 반 만들기";
+                if (action === 'add') {
+                    student.clean += scoreValue;
+                    changeStr = `+${scoreValue}`;
+                } else {
+                    const oldClean = student.clean;
+                    student.clean = Math.max(0, oldClean - scoreValue);
+                    if (oldClean - student.clean === 0) {
+                        showModal("안내", "현재 횟수가 0회라 더 이상 차감할 수 없습니다.", "info");
+                        return;
+                    }
+                    changeStr = `-${oldClean - student.clean}`;
+                }
+            }
+
+            actionLogs.unshift({
+                date: getFormattedDate(),
+                name: studentName,
+                type: action,
+                target: targetLabel,
+                change: changeStr,
+                reason: reason
+            });
+
+            document.getElementById('record-form').reset();
+            document.getElementById('record-target').value = 'score';
+            document.querySelector('input[name="action-type"][value="add"]').checked = true;
+
+            renderAdminSelect();
+            renderLogs();
+            
+            const actionText = action === 'add' ? '부여' : '차감';
+            showModal("기록 완료", `${studentName} 학생의 <strong>${targetLabel}</strong> 항목이 ${scoreValue}만큼 ${actionText}되었습니다.`, "success");
+        }
+
+        // --- 관리자: 내역 비우기 ---
+        function clearLogs() {
+            if (actionLogs.length === 0) return;
+            // 네이티브 confirm 대신 프롬프트 모방 로직(간단하게 대체)
+            actionLogs = [];
+            renderLogs();
+            showModal("초기화 완료", "로그 내역이 모두 삭제되었습니다.", "success");
+        }
+    </script>
+</body>
+</html>
